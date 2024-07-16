@@ -3650,7 +3650,12 @@
 
     // Remove trailing zeros.
     for (i = xe; xd[i] === 0; --i) xd.pop();
-    if (i < 0) return new Ctor(x.s * 0);
+    if (i < 0) {
+      x.s = 1;
+      x.e = 0;
+      x.d = [0]
+      return;
+    }
     x.e = getBase10Exponent(xd, xe);
     x.d = xd;
     external = false;
@@ -3661,10 +3666,20 @@
     // E.g. ceil(1.2 * 3) = 4, so up to 4 decimal digits are needed to represent 3 hex int digits.
     // maxDecimalFractionPartDigitCount = {Hex:4|Oct:3|Bin:1} * otherBaseFractionPartDigitCount
     // Therefore using 4 * the number of digits of str will always be enough.
-    if (isFloat) x = divide(x, divisor, len * 4);
+    if (isFloat) {
+      var divided = divide(x, divisor, len * 4);
+      x.s = divided.s;
+      x.e = divided.e;
+      x.d = divided.d;
+    }
 
     // Multiply by the binary exponent part if present.
-    if (p) x = x.times(Math.abs(p) < 54 ? mathpow(2, p) : Decimal.pow(2, p));
+    if (p) {
+      var timed = x.times(Math.abs(p) < 54 ? mathpow(2, p) : Decimal.pow(2, p));
+      x.s = timed.s;
+      x.e = timed.e;
+      x.d = timed.d;
+    }
     external = true;
 
     return x;
@@ -4287,7 +4302,7 @@
         x = this;
 
       // Decimal called without new.
-      if (!(x instanceof Decimal)) return new Decimal(v);
+      if (!(x instanceof Decimal)) throw new Error('Decimal constructor should be used with new keyword');
 
       // Retain a reference to this Decimal constructor, and shadow Decimal.prototype.constructor
       // which points to Object.
@@ -4367,8 +4382,8 @@
           return;
         }
 
-        return parseDecimal(x, v.toString());
-
+        parseDecimal(x, v.toString());
+        return;
       } else if (t !== 'string') {
         throw Error(invalidArgument + v);
       }
@@ -4383,7 +4398,7 @@
         x.s = 1;
       }
 
-      return isDecimal.test(v) ? parseDecimal(x, v) : parseOther(x, v);
+      isDecimal.test(v) ? parseDecimal(x, v) : parseOther(x, v);
     }
 
     Decimal.prototype = P;
