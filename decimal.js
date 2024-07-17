@@ -3651,7 +3651,6 @@
     // Remove trailing zeros.
     for (i = xe; xd[i] === 0; --i) xd.pop();
     if (i < 0) {
-      x.s = 1;
       x.e = 0;
       x.d = [0]
       return;
